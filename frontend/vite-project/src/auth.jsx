@@ -4,6 +4,8 @@ import "./auth.css";
 
 export default function Auth({ apiUrl, onAuthSuccess }) {
   const [mode, setMode] = useState("login");
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,10 +27,11 @@ export default function Auth({ apiUrl, onAuthSuccess }) {
           { withCredentials: true }
         );
 
-        setMode("login");
+        setVerificationEmail(email.trim().toLowerCase());
+        setOtp("");
         setName("");
         setPassword("");
-        setSuccessMessage("Account create ho gaya. Ab login karke dashboard kholo.");
+        setSuccessMessage("OTP email pe bhej diya gaya hai. Verify karke login karo.");
         return;
       }
 
@@ -41,6 +44,49 @@ export default function Auth({ apiUrl, onAuthSuccess }) {
       onAuthSuccess(response.data?.data?.user || null);
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+
+    try {
+      await axios.post(
+        `${apiUrl}/user/verify-email`,
+        { email: verificationEmail, otp },
+        { withCredentials: true }
+      );
+
+      setMode("login");
+      setOtp("");
+      setVerificationEmail("");
+      setSuccessMessage("Email verify ho gayi. Ab login karo.");
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || "OTP verify nahi ho paya");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+
+    try {
+      await axios.post(
+        `${apiUrl}/user/resend-verification-otp`,
+        { email: verificationEmail },
+        { withCredentials: true }
+      );
+      setSuccessMessage("Naya OTP bhej diya gaya hai.");
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || "OTP resend nahi ho paya");
     } finally {
       setLoading(false);
     }
@@ -116,6 +162,30 @@ export default function Auth({ apiUrl, onAuthSuccess }) {
             {mode === "login" ? "New user? Register" : "Already have an account? Login"}
           </p>
         </form>
+
+        {verificationEmail && (
+          <form className="form" onSubmit={handleVerifyOtp}>
+            <h2>Verify Email</h2>
+            <input type="email" value={verificationEmail} readOnly />
+            <input
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              type="text"
+              placeholder="Enter 6-digit OTP"
+              minLength={6}
+              maxLength={6}
+              required
+            />
+
+            <button type="submit" disabled={loading}>
+              {loading ? "Please wait..." : "Verify OTP"}
+            </button>
+
+            <button type="button" disabled={loading} onClick={handleResendOtp}>
+              Resend OTP
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

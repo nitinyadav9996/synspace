@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
     registerUser,
+    verifyEmailOtp,
+    resendVerificationOtp,
     loginUser,
     logoutUser,
     getUserProfile,
@@ -13,10 +15,11 @@ const route = Router();
 
 // define the routes
 route.route('/register').post(registerUser);
+route.route('/verify-email').post(verifyEmailOtp);
+route.route('/resend-verification-otp').post(resendVerificationOtp);
 route.route('/login').post(loginUser);
 route.route('/logout').post(verifyToken, logoutUser);
 route.route('/profile').get(verifyToken, getUserProfile);
 route.route('/profile').put(verifyToken, updateUserProfile);
 
 export default route;
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWFiZWJkOWNhOGYyNDZhOTM4ZjMyMzUiLCJlbWFpbCI6ImphdGluQGdtYWlsLmNvbSIsImlhdCI6MTc3Mjg3NDg0MiwiZXhwIjoxNzcyODc1NzQyfQ.-MKeSCwNFXXtZRSaqHpSI1AOEq2ExBFsPfdLaImrYho

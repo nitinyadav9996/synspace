@@ -32,6 +32,18 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationOtpHash: {
+      type: String,
+      default: null,
+    },
+    emailVerificationOtpExpiry: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
