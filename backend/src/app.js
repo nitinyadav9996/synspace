@@ -5,16 +5,26 @@ import ApiError from './utils/ApiError.js';
 
 const a = express();
 
+const normalizeOrigin = (value = "") =>
+  String(value).trim().replace(/^["']|["']$/g, "").replace(/\/+$/, "");
+
+const allowedOrigins = (process.env.CORS_ORIGIN || "*")
+  .split(",")
+  .map((origin) => normalizeOrigin(origin))
+  .filter(Boolean);
+
 a.use(
   cors({
     origin: (origin, callback) => {
-      const allowed = process.env.CORS_ORIGIN;
+      const requestOrigin = normalizeOrigin(origin || "");
 
       // If there is no origin (non-browser requests), allow it.
       if (!origin) return callback(null, true);
 
       // If allowed is '*' then reflect the requesting origin (important for `credentials: true`).
-      if (!allowed || allowed === "*" || origin === allowed) return callback(null, true);
+      if (allowedOrigins.includes("*")) return callback(null, true);
+
+      if (allowedOrigins.includes(requestOrigin)) return callback(null, true);
 
       return callback(new Error("Not allowed by CORS"));
     },

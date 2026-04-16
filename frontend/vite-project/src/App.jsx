@@ -4,7 +4,7 @@ import "./App.css";
 import Auth from "./auth";
 import Dashboard from "./Dashboard";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);

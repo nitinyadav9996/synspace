@@ -5,6 +5,15 @@ import User from "../models/usermodel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  };
+};
+
 // Register User
 const registerUser = asynchandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -78,6 +87,7 @@ const loginUser = asynchandler(async (req, res) => {
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: "7d" }
   );
+  const cookieOptions = getCookieOptions();
 
   // Save refresh token in database
   user.refreshToken = refreshToken;
@@ -89,8 +99,8 @@ const loginUser = asynchandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, { httpOnly: true })
-    .cookie("refreshToken", refreshToken, { httpOnly: true })
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,
@@ -109,8 +119,8 @@ const logoutUser = asynchandler(async (req, res) => {
 
   return res
     .status(200)
-    .clearCookie("accessToken")
-    .clearCookie("refreshToken")
+    .clearCookie("accessToken", getCookieOptions())
+    .clearCookie("refreshToken", getCookieOptions())
     .json(new ApiResponse(200, {}, "Logout successful"));
 });
 
